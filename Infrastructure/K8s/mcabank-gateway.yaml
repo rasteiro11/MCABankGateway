@@ -44,7 +44,7 @@ spec:
             - name: CUSTOMER_SERVICE_URL
               value: "http://mcabank-customer-service.default.svc.cluster.local:5002"
             - name: AUTH_SERVICE_URL
-              value: "http://mcabank-auth-service.default.svc.cluster.local:5001/user"
+              value: "http://mcabank-auth-http.default.svc.cluster.local:5001/user"
 ---
 apiVersion: v1
 kind: Service
