@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcabank-gateway
+  labels:
+    app: mcabank-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcabank-gateway
+  template:
+    metadata:
+      labels:
+        app: mcabank-gateway
+    spec:
+      containers:
+        - name: mcabank-gateway
+          image: rasteiro11/mcabank-gateway:20250914120000
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5004
+          env:
+            - name: APP_ENV
+              value: "Production"
+            - name: APP_PORT
+              value: "5004"
+            - name: DATABASE_USER
+              value: "root"
+            - name: DATABASE_PASSWORD
+              value: "root"
+            - name: DATABASE_ADDR
+              value: "0.0.0.0:3306"
+            - name: DATABASE
+              value: "mcabank-db"
+            - name: JWT_SECRET
+              value: "mcabank-secret"
+            - name: SERVER_PORT
+              value: ":5004"
+            - name: AUTH_GRPC_SERVICE
+              value: "localhost:50051"
+            - name: PAYMENT_GRPC_SERVICE
+              value: "127.0.0.1:50053"
+            - name: CUSTOMER_SERVICE_URL
+              value: "http://127.0.0.1:5002"
+            - name: AUTH_SERVICE_URL
+              value: "http://127.0.0.1:5001/user"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcabank-gateway-service
+  labels:
+    app: mcabank-gateway
+spec:
+  type: NodePort
+  ports:
+    - port: 5004
+      targetPort: 5004
+      nodePort: 30088
+  selector:
+    app: mcabank-gateway
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mcabank-gateway-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - host: mcabank.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: mcabank-gateway-service
+                port:
+                  number: 5004
+
