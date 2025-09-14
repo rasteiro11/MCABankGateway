@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: mcabank-gateway
-          image: rasteiro11/mcabank-gateway:20250914120000
+          image: rasteiro11/mcabank-gateway:20250914184408
           imagePullPolicy: Always
           ports:
             - containerPort: 5004
