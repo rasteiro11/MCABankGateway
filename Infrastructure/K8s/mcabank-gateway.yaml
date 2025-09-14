@@ -40,7 +40,7 @@ spec:
             - name: AUTH_GRPC_SERVICE
               value: "mcabank-auth-grpc.default.svc.cluster.local:50051"
             - name: PAYMENT_GRPC_SERVICE
-              value: "mcabank-payment-service.default.svc.cluster.local:50053"
+              value: "mcabank-payment-grpc.default.svc.cluster.local:50053"
             - name: CUSTOMER_SERVICE_URL
               value: "http://mcabank-customer-service.default.svc.cluster.local:5002"
             - name: AUTH_SERVICE_URL
