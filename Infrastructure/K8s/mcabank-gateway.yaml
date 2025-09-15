@@ -52,9 +52,9 @@ spec:
             - containerPort: 5004
           envFrom:
             - configMapRef:
-                name: mcabank-payment-config
+                name: mcabank-gateway-config
             - secretRef:
-                name: mcabank-payment-secret
+                name: mcabank-gateway-secret
 ---
 apiVersion: v1
 kind: Service
