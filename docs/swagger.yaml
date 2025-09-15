@@ -1,0 +1,362 @@
+basePath: /
+definitions:
+  http.createCustomerRequest:
+    properties:
+      email:
+        example: john@example.com
+        type: string
+      nome:
+        example: John Doe
+        type: string
+    required:
+    - email
+    - nome
+    type: object
+  http.customerResponse:
+    properties:
+      email:
+        example: john@example.com
+        type: string
+      id:
+        example: 1
+        type: integer
+      nome:
+        example: John Doe
+        type: string
+      saldo:
+        example: 1000.5
+        type: number
+    type: object
+  http.depositResponse:
+    properties:
+      status:
+        example: Depósito iniciado com sucesso
+        type: string
+    type: object
+  http.loginRequest:
+    properties:
+      email:
+        example: user@example.com
+        type: string
+      password:
+        example: secret123
+        type: string
+    type: object
+  http.loginResponse:
+    properties:
+      expires_at:
+        type: string
+      token:
+        type: string
+    type: object
+  http.paymentRequest:
+    properties:
+      amount:
+        example: 100.5
+        type: number
+      customer_id:
+        example: 1
+        type: integer
+      idempotency_key:
+        example: unique-key-123
+        type: string
+    type: object
+  http.registerRequest:
+    properties:
+      email:
+        example: newuser@example.com
+        type: string
+      password:
+        example: secret123
+        type: string
+    type: object
+  http.updateCustomerRequest:
+    properties:
+      email:
+        example: john@example.com
+        type: string
+      nome:
+        example: John Doe
+        type: string
+    required:
+    - email
+    - nome
+    type: object
+  http.withdrawResponse:
+    properties:
+      status:
+        example: Saque iniciado com sucesso
+        type: string
+    type: object
+host: localhost:5004
+info:
+  contact: {}
+  description: API Gateway aggregating all MCA Bank services (Auth, User, etc.).
+  title: MCA Bank Gateway API
+  version: "1.0"
+paths:
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user account
+      parameters:
+      - description: Register request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.registerRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/http.loginResponse'
+        "400":
+          description: Bad Request
+          schema: {}
+        "401":
+          description: Unauthorized
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Register
+      tags:
+      - Auth
+  /auth/signin:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user with email and password
+      parameters:
+      - description: Login request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.loginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.loginResponse'
+        "400":
+          description: Bad Request
+          schema: {}
+        "401":
+          description: Unauthorized
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Sign in
+      tags:
+      - Auth
+  /clientes:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve list of all customers
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/http.customerResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Get all customers
+      tags:
+      - Customer
+    post:
+      consumes:
+      - application/json
+      description: Create a new customer
+      parameters:
+      - description: Customer to create
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.createCustomerRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/http.customerResponse'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Create a customer
+      tags:
+      - Customer
+  /clientes/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete customer by ID
+      parameters:
+      - description: Customer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Delete a customer
+      tags:
+      - Customer
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a customer by their ID
+      parameters:
+      - description: Customer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.customerResponse'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Get customer by ID
+      tags:
+      - Customer
+    put:
+      consumes:
+      - application/json
+      description: Update customer information by ID
+      parameters:
+      - description: Customer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated customer info
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.updateCustomerRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.customerResponse'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Update a customer
+      tags:
+      - Customer
+  /clientes/{id}/depositar:
+    post:
+      consumes:
+      - application/json
+      description: Deposit money to a customer's account
+      parameters:
+      - description: Customer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Deposit request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.paymentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.depositResponse'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Deposit money
+      tags:
+      - Payment
+  /clientes/{id}/sacar:
+    post:
+      consumes:
+      - application/json
+      description: Withdraw money from a customer's account
+      parameters:
+      - description: Customer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Withdraw request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.paymentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.withdrawResponse'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Withdraw money
+      tags:
+      - Payment
+schemes:
+- http
+swagger: "2.0"

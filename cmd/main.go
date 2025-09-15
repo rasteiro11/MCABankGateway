@@ -1,7 +1,14 @@
+// @title MCA Bank Gateway API
+// @version 1.0
+// @description API Gateway aggregating all MCA Bank services (Auth, User, etc.).
+// @host localhost:5004
+// @BasePath /
+// @schemes http
 package main
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	pbPaymentClient "github.com/rasteiro11/MCABankGateway/gen/proto/go/payment"
@@ -10,8 +17,9 @@ import (
 	customerRestClient "github.com/rasteiro11/MCABankGateway/pkg/rest/customer"
 	"github.com/rasteiro11/MCABankGateway/pkg/transport/http/middleware"
 	authService "github.com/rasteiro11/MCABankGateway/src/auth/service"
-	"github.com/rasteiro11/MCABankGateway/src/customer/delivery/http"
+	customerHttp "github.com/rasteiro11/MCABankGateway/src/customer/delivery/http"
 
+	_ "github.com/rasteiro11/MCABankGateway/docs"
 	authHttp "github.com/rasteiro11/MCABankGateway/src/auth/delivery/http"
 	balanceService "github.com/rasteiro11/MCABankGateway/src/balance/service"
 	customerService "github.com/rasteiro11/MCABankGateway/src/customer/service"
@@ -20,6 +28,7 @@ import (
 	"github.com/rasteiro11/PogCore/pkg/config"
 	"github.com/rasteiro11/PogCore/pkg/logger"
 	"github.com/rasteiro11/PogCore/pkg/server"
+	fiberSwagger "github.com/swaggo/fiber-swagger"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -48,6 +57,7 @@ func main() {
 	paymentClient := pbPaymentClient.NewPaymentServiceClient(paymentConn)
 
 	app := server.NewServer()
+	app.AddHandler("/swagger/*", "", http.MethodGet, fiberSwagger.WrapHandler)
 	app.Use("/clientes", middleware.ValidateUserMiddleware(authClient))
 	app.Use("/*", cors.New(cors.Config{
 		AllowOrigins: "*",
@@ -62,7 +72,7 @@ func main() {
 	customerSvc := customerService.NewCustomerService(customerClient, balanceSvc)
 	authSvc := authService.NewAuthService(authRestClient)
 
-	http.NewHandler(app, http.WithCustomerService(customerSvc))
+	customerHttp.NewHandler(app, customerHttp.WithCustomerService(customerSvc))
 	authHttp.NewHandler(app, authHttp.WithAuthService(authSvc))
 	paymentHttp.NewHandler(app, paymentHttp.WithPaymentService(paymentSvc))
 

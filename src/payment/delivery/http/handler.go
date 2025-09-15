@@ -35,6 +35,18 @@ func NewHandler(server server.Server, opts ...HandlerOpt) {
 	server.AddHandler("/:id/sacar", PaymentGRoupPath, http.MethodPost, h.Withdraw)
 }
 
+// Deposit godoc
+// @Summary Deposit money
+// @Description Deposit money to a customer's account
+// @Tags Payment
+// @Accept json
+// @Produce json
+// @Param id path int true "Customer ID"
+// @Param request body paymentRequest true "Deposit request"
+// @Success 200 {object} depositResponse
+// @Failure 400 {object} any
+// @Failure 500 {object} any
+// @Router /clientes/{id}/depositar [post]
 func (h *handler) Deposit(c *fiber.Ctx) error {
 	id, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
@@ -53,6 +65,18 @@ func (h *handler) Deposit(c *fiber.Ctx) error {
 	return rest.NewStatusOk(c, rest.WithBody(&depositResponse{Status: "Depósito iniciado com sucesso"}))
 }
 
+// Withdraw godoc
+// @Summary Withdraw money
+// @Description Withdraw money from a customer's account
+// @Tags Payment
+// @Accept json
+// @Produce json
+// @Param id path int true "Customer ID"
+// @Param request body paymentRequest true "Withdraw request"
+// @Success 200 {object} withdrawResponse
+// @Failure 400 {object} any
+// @Failure 500 {object} any
+// @Router /clientes/{id}/sacar [post]
 func (h *handler) Withdraw(c *fiber.Ctx) error {
 	id, err := strconv.Atoi(c.Params("id"))
 	if err != nil {

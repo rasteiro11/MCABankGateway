@@ -20,3 +20,6 @@ deploy:
 logs:
 	clear && tail -n 60 -f $(APP).log
 
+docs:
+	swag init -g cmd/main.go -o docs
+
