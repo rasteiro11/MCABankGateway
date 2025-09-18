@@ -8,6 +8,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -28,6 +29,8 @@ import (
 	"github.com/rasteiro11/PogCore/pkg/config"
 	"github.com/rasteiro11/PogCore/pkg/logger"
 	"github.com/rasteiro11/PogCore/pkg/server"
+	"github.com/rasteiro11/PogCore/pkg/telemetry/opentelemetry"
+	"github.com/rasteiro11/PogCore/pkg/telemetry/tracer"
 	fiberSwagger "github.com/swaggo/fiber-swagger"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -35,6 +38,12 @@ import (
 
 func main() {
 	ctx := context.Background()
+	provider := opentelemetry.NewProvider(ctx)
+	tracer.SetGlobal(provider)
+
+	ctx, span := tracer.Instance().Start(ctx, "test")
+	span.RecordError(errors.New("Simple test"))
+	span.End()
 
 	credentials := insecure.NewCredentials()
 	authConn, err := grpc.Dial(config.Instance().RequiredString("AUTH_GRPC_SERVICE"),
